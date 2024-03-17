@@ -1,9 +1,19 @@
+"""
+Alson Lee
+Date: 17/03/24
+
+The deck module contains methods for cards and decks for the 
+market making card game.
+"""
+
 import random as rand
 
-
-
+"""
+Class to represent a playing card.
+"""
 class Card:
-    def __init__(self, rank = 0, suit = None) -> None:
+    def __init__(self, card_id=0, rank=0, suit=None) -> None:
+        self.card_id: int = card_id
         self.rank: int = rank
         self.suit: str = suit
 
@@ -11,8 +21,15 @@ class Card:
         return f'{self.rank}{self.suit}'
 
 
+"""
+Class to represent a deck of cards.
+"""
 class Deck:
-    def __init__(self, ranks = [], suits = []) -> None:
+    def __init__(self, ranks=None, suits=None) -> None:
+        if suits is None:
+            suits = []
+        if ranks is None:
+            ranks = []
         self.ranks: list[str] = ranks
         self.suits: list[str] = suits
 
@@ -30,11 +47,13 @@ class Deck:
         :param values: The list of values
         :return:       Representation of a deck as list
         """
+        card_id = 0
         new_deck = []
         if ranks and suits:
             for rank in ranks:
                 for suit in suits:
-                    new_deck.append(Card(rank, suit))
+                    new_deck.append(Card(card_id, rank, suit))
+                    card_id += 1
             self.deck = new_deck
         else:
             print("Cannot create deck!")
@@ -56,5 +75,5 @@ class Deck:
         Return the card from the top of the deck.
         :return:     A card from the deck
         """
-        return self.deck.pop(rand.randint(0, len(self.deck) - 1))
-    
+        return self.deck.pop(rand.randint(0, len(self.deck) - 1)) if len(
+            self.deck) > 0 else None
