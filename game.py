@@ -1,6 +1,6 @@
 """
 Alson Lee
-Date: 15/03/24
+Date: 05/04/24
 
 Market making card game
 """
@@ -24,17 +24,21 @@ ROUNDS = 3
 TIME_LIMIT = 60
 
 MARKET_EVENTS = False
+MARKET_EVENT_CHANCE = 0.5
 
 START_BALANCE = 500
 SHOW_BALANCE = True
 
-SUITS_1 = ['♥', '♦', '♣', '♠']
-SUITS_2 = ['🐄', '🐍', '🐕', '🐬', '🐞']
-SUITS_3 = ['⚽', '⭐', '❌', '🔶', '✅', '♒', '🔵']
+SUITS = {1: ['♥', '♦', '♣', '♠'],
+         2: ['🐄', '🐍', '🐕', '🐬', '🐞'],
+         3: ['⚽', '⭐', '❌', '🔶', '✅', '♒', '🔵']}
 
-RANKS = [str(i) for i in range(2, 11)] + ['J', 'Q', 'K', 'A']
-FACE_CARD_VALUES_1 = {'J': 11, 'Q': 12, 'K': 13, 'A': 14}
-FACE_CARD_VALUES_2 = {'A': 1, 'J': 11, 'Q': 12, 'K': 13}
+RANKS = {1: list(map(str, range(2, 11))) + ['J', 'Q', 'K', 'A'],
+         2: list(map(str, range(1, 21))),
+         3: list(map(str, range(1, 31)))}
+
+FACE_CARD_VALUES = {1: {'J': 11, 'Q': 12, 'K': 13, 'A': 14}, 
+                    2: {'A': 1, 'J': 11, 'Q': 12, 'K': 13}}
 
 # TODO: Timer
 class Timer:
@@ -43,18 +47,22 @@ class Timer:
 
 
 def main() -> None:
-    print('Market making card game')
-    print('If a card is face-down, it is displayed as --')
+    display.print_title()
 
-    ranks = RANKS 
-    suits = SUITS_1
-    face_card_values = FACE_CARD_VALUES_1
+    ranks, suits, face_card_values = RANKS[1], SUITS[1], FACE_CARD_VALUES[1]
+
+    display.show_settings(cards_per_round=CARDS_PER_ROUND, rounds=ROUNDS, 
+                          time_limit=TIME_LIMIT, market_events=MARKET_EVENTS, 
+                          start_balance=START_BALANCE, show_balance=SHOW_BALANCE)
+    display.show_card_values(suits, ranks, face_card_values)
     values = {}
     for rank in ranks:
         if rank.isnumeric():
             values[rank] = int(rank)
         else:
             values[rank] = face_card_values[rank]
+
+    display.print_instructions()
 
     # Instantiate deck and player
     game_deck = Deck(ranks, suits)

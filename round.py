@@ -1,6 +1,6 @@
 """
 Alson Lee
-Date: 17/03/24
+Date: 05/04/24
 
 Market making card game
 """
@@ -12,6 +12,7 @@ import os
 
 import random as rand
 from deck import Card, Deck
+from market_event import MarketEvent
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -20,7 +21,8 @@ Class to represent a round of the market making card game.
 """
 class Round:
     def __init__(self, round_num=1, const_deck=None, picked_cards=[],
-                 is_face_up=[], card_values={}, seen_cards=set()) -> None:
+                 is_face_up=[], card_values={}, seen_cards=set(), 
+                 market_events_enabled=False) -> None:
         self.round_num: int = round_num
         self.const_deck: Deck = const_deck
         self.card_values: dict[str, int] = card_values
@@ -39,8 +41,11 @@ class Round:
         self.player_true_pl = 0
         self.player_input_pl = 0
 
+        self.market_events_enabled = market_events_enabled
+        self.market_event: MarketEvent = None 
+
     def __str__(self) -> str:
-        return (f'Round:         {self.round_num}' + '\n'
+        return (  f'Round:         {self.round_num}' + '\n'
                 + f'Cards:         {self.show_round()} (EV = {self.ev:.2f})' + '\n'
                 + f'Reveal:        {self.reveal_all_cards()} (Actual = {self.sum_value()})' + '\n'
                 + f'Spread:        {self.spread[0]} at {self.spread[1]}' + '\n'
@@ -50,10 +55,11 @@ class Round:
                 + f'Start balance: {self.player_start_bal}' + '\n'
                 + f'End balance:   {self.player_end_bal}')
 
-    def show_round(self) -> str:
+    def show_round(self, face_down_sym: str = '--') -> str:
         """
         Returns a string of the round for the player.
-        :return: String of cards. '--' if the card is face-down.
+        :param face_down_sym: The symbol if the card is face-down. Default is --.
+        :return: String of cards. By default, -- if the card is face-down.
         """
         show = []
         for card, is_face_up in zip(self.picked_cards, self.is_face_up):
@@ -61,7 +67,7 @@ class Round:
                 show.append(f'{str(card):<4}')
                 self.seen_cards.add(card.card_id)
             else:
-                show.append(f'{"--":<4}')
+                show.append(f'{face_down_sym:<4}')
         return ''.join(show)
 
     def reveal_all_cards(self) -> str:
@@ -198,7 +204,7 @@ class Round:
                 sum_face_up += self.card_values[card.rank]
 
         # Remove any seen cards
-        not_seen = copy.deepcopy(self.const_deck.deck)
+        not_seen = list(copy.deepcopy(self.const_deck.deck))
         for card in not_seen:
             card: Card
             if card.card_id in self.seen_cards:
@@ -223,7 +229,9 @@ class Round:
         fig, ax = plt.subplots()
         ax.hist(frequency, num_bins, density=True)
         ax.set_xlabel('Value')
+        ax.set_xlim(xmin=0, xmax=50)
         ax.set_ylabel('Probability Density')
+        ax.set_ylim(ymax=0.1)
         ax.set_title(f'Card Value Sum Probability Density - Round {self.round_num}')
         fig.tight_layout()
         try:
@@ -279,3 +287,11 @@ class Round:
         """
         self.picked_cards.clear()
         self.is_face_up.clear()
+
+    def roll_market_event(self) -> int:
+        if self.market_events_enabled:
+            event = MarketEvent()
+
+        else:
+            return 0
+        
